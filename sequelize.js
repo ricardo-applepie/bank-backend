@@ -1,5 +1,5 @@
 // sequelize.js
-const { Sequelize } = require('sequelize');
+const { Sequelize } = require('sequelize');  // Ensure Sequelize is imported
 const config = require('./config');
 
 const environment = 'development'; // Change this if using a different environment

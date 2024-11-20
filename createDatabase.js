@@ -9,6 +9,12 @@ const dbConfig = config[environment];
 const sequelize = new Sequelize(dbConfig.database, dbConfig.username, dbConfig.password, {
   host: dbConfig.host,
   dialect: dbConfig.dialect,
+  dialectOptions: {
+    ssl: {
+      require: true, // This ensures SSL is required
+      rejectUnauthorized: false, // Depending on your environment, you may need to set this to true or false
+    },
+  },
 });
 
 const createDatabase = async () => {

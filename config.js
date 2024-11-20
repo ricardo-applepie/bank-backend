@@ -1,10 +1,14 @@
+require('dotenv').config();
+
 // config.js
+const { PGHOST, PGDATABASE, PGUSER, PGPASSWORD } = process.env;
+
 module.exports = {
   development: {
-    username: 'postgres',
-    password: 'san123tos',
-    database: 'bank_app',
-    host: '127.0.0.1',
-    dialect: 'postgres',
+    username: PGUSER,
+    password: PGPASSWORD,
+    database: PGDATABASE,
+    host: PGHOST,
+    dialect: PGUSER,
   },
 };
