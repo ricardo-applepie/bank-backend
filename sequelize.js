@@ -5,8 +5,7 @@ const config = require('./config');
 const environment = 'development'; // Change this if using a different environment
 const dbConfig = config[environment];
 
-const sequelize = new Sequelize(dbConfig.database, dbConfig.username, dbConfig.password, {
-  host: dbConfig.host,
+const sequelize = new Sequelize(`postgres://${dbConfig.username}:${dbConfig.password}@${dbConfig.host}/${dbConfig.database}?sslmode=require`, {
   dialect: dbConfig.dialect,
 });
 
