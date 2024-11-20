@@ -1,5 +1,5 @@
 const express = require('express');
-const { User, Account, Notification, Transaction } = require('./models/tables');
+const { User, Account, Notification, Transaction, syncModels } = require('./models/tables');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
@@ -7,6 +7,7 @@ const app = express()
 const port = 4000;
 const cors = require('cors'); // Import the cors middleware
 const { json, Sequelize } = require('sequelize');
+syncModels();
 const sequelize = require('./sequelize');
 const corsOptions = {
   origin: '*', // Allow only this origin

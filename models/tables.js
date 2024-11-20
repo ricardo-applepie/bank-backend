@@ -139,6 +139,5 @@ const syncModels = async () => {
   }
 };
 
-syncModels();
 
-module.exports = { User, Account, Notification, Transaction };
+module.exports = { User, Account, Notification, Transaction, syncModels };
