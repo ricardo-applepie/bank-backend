@@ -205,26 +205,34 @@ app.get('/account', verifyToken, async (req, res) => {
           { receiverId: userId }
         ]
       },
-      order: [['createdAt', 'DESC']], // Order by creation date, latest first
+      order: [['createdAt', 'DESC']],
       include: [
         {
           model: User,
-          as: 'sender',  // Alias for the sender user
+          as: 'sender',
+          attributes: ['firstName', 'lastName'],
+        },
+        {
+          model: User,
+          as: 'receiver',
           attributes: ['firstName', 'lastName'],
         },
         {
           model: Account,
           as: 'receiverAccount',  // Alias for the receiver's account
           attributes: ['accountId'],
-          where: { userId: Sequelize.col('Transaction.receiverId') },  // Ensure it's the receiver's account
-        },
-        {
-          model: User,
-          as: 'receiver',  // Alias for the receiver user
-          attributes: ['firstName', 'lastName'],
+          required: false,  // Allows transactions without an associated account
+          on: {
+            userId: Sequelize.where(
+              Sequelize.col('receiverAccount.userId'),
+              '=',
+              Sequelize.col('Transaction.receiverId')
+            )
+          }
         }
       ]
     });
+
 
 
     const users = await User.findAll({
