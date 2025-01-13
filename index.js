@@ -122,26 +122,21 @@ app.post('/create', async (req, res) => {
           { receiverId: userId }
         ]
       },
-      order: [['createdAt', 'DESC']], // Order by creation date, latest first
       include: [
         {
           model: User,
-          as: 'Sender',  // Alias for the sender user
-          attributes: ['firstName', 'lastName'],
-          where: {
-            userId: Sequelize.col('Transaction.senderId')
-          }
+          as: 'sender',    // Specify the alias for the sender
+          attributes: ['firstName', 'lastName', 'email']
         },
         {
           model: User,
-          as: 'Receiver',  // Alias for the receiver user
-          attributes: ['firstName', 'lastName'],
-          where: {
-            userId: Sequelize.col('Transaction.receiverId')
-          }
+          as: 'receiver',  // Specify the alias for the receiver
+          attributes: ['firstName', 'lastName', 'email']
         }
-      ]
+      ],
+      order: [['createdAt', 'DESC']],  // Order by creation date
     });
+
 
 
     // Restructure the response
