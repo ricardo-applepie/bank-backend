@@ -32,9 +32,9 @@ function verifyToken(req, res, next) {
    }
  };
 
-app.post('/create', async (req, res) => {
-  const { senderId, receiverId, amount, type } = req.body;
-
+app.post('/create', async (req, res) => { 
+  const { senderId, receiverId, amount, type } = req.body; 
+  
   // Start a new transaction
   const t = await sequelize.transaction();
 
@@ -44,13 +44,11 @@ app.post('/create', async (req, res) => {
     const receiverAccount = await Account.findOne({ where: { userId: receiverId } }, { transaction: t });
 
     if (!senderAccount || !receiverAccount) {
-      await t.rollback(); // Rollback if either account not found
       return res.status(404).json({ message: 'Sender or receiver account not found' });
     }
 
     // Ensure sufficient balance for debit transactions
     if (type === 'debit' && parseFloat(senderAccount.balance) < parseFloat(amount)) {
-      await t.rollback();
       return res.status(400).json({ message: 'Insufficient balance in sender account' });
     }
 
@@ -78,7 +76,7 @@ app.post('/create', async (req, res) => {
     // Commit the transaction
     await t.commit();
 
-    // Fetch the updated sender account details
+    // After commit, continue with the other queries
     const account = await Account.findOne({
       where: { userId: senderId },
       include: [{
@@ -97,51 +95,38 @@ app.post('/create', async (req, res) => {
     // Fetch unread notifications for the sender
     const notifications = await Notification.findAll({
       where: { userId: senderId, status: 'unread' },
-      attributes: ['notificationId', 'message', 'status', 'createdAt'], // Specify the fields you want
-      order: [['createdAt', 'DESC']], // Order by creation date, latest first
+      attributes: ['notificationId', 'message', 'status', 'createdAt'],
+      order: [['createdAt', 'DESC']],
     });
 
     const plainNotifications = notifications.map(notification => notification.get({ plain: true }));
 
     // Fetch all users except the sender
     const users = await User.findAll({
-      where: {
-        userId: {
-          [Sequelize.Op.ne]: senderId  // Exclude the sender
-        }
-      },
-      attributes: ['userId', 'firstName', 'lastName', 'email'] // Specify the fields you want to include
+      where: { userId: { [Sequelize.Op.ne]: senderId } },
+      attributes: ['userId', 'firstName', 'lastName', 'email']
     });
 
     const plainUsers = users.map(user => user.get({ plain: true }));
 
+    // Fetch transactions for the sender
     const transactions = await Transaction.findAll({
       where: {
         [Sequelize.Op.or]: [
-          { senderId: userId },
-          { receiverId: userId }
+          { senderId: senderId },
+          { receiverId: senderId }
         ]
       },
       include: [
-        {
-          model: User,
-          as: 'sender',    // Specify the alias for the sender
-          attributes: ['firstName', 'lastName', 'email']
-        },
-        {
-          model: User,
-          as: 'receiver',  // Specify the alias for the receiver
-          attributes: ['firstName', 'lastName', 'email']
-        }
+        { model: User, as: 'sender', attributes: ['firstName', 'lastName', 'email'] },
+        { model: User, as: 'receiver', attributes: ['firstName', 'lastName', 'email'] }
       ],
-      order: [['createdAt', 'DESC']],  // Order by creation date
+      order: [['createdAt', 'DESC']],
     });
-
-
 
     // Restructure the response
     const response = {
-      userId: senderId, // Assuming senderId corresponds to the user making the request
+      userId: senderId,
       accountId: accountData.accountId,
       balance: accountData.balance,
       email: accountData.email,
@@ -149,15 +134,18 @@ app.post('/create', async (req, res) => {
       lastName: user.lastName,
       createdAt: accountData.createdAt,
       updatedAt: accountData.updatedAt,
-      notifications: plainNotifications, // Include notifications
-      users: plainUsers, // Include users
-      transactions // Include the created transaction if needed
+      notifications: plainNotifications,
+      users: plainUsers,
+      transactions
     };
 
     res.status(201).json(response);
+
   } catch (error) {
-    // If any error occurs, rollback the transaction
-    await t.rollback();
+    // If any error occurs, rollback the transaction before committing
+    if (t.finished !== 'commit') {
+      await t.rollback();
+    }
     res.status(500).json({ message: 'Transaction failed', error: error.message });
   }
 });
