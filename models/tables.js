@@ -43,7 +43,7 @@ const Account = sequelize.define('Account', {
   balance: {
     type: DataTypes.DECIMAL(15, 2),  // Decimal type for financial data
     allowNull: false,
-    defaultValue: 0.00,  
+    defaultValue: 1000,  
   },
   email: {
     type: DataTypes.STRING,
