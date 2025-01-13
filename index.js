@@ -125,12 +125,12 @@ app.post('/create', async (req, res) => {
       include: [
         {
           model: User,
-          as: 'Sender',    // Specify the alias for the sender
+          as: 'sender',    // Specify the alias for the sender
           attributes: ['firstName', 'lastName', 'email']
         },
         {
           model: User,
-          as: 'Receiver',  // Specify the alias for the receiver
+          as: 'receiver',  // Specify the alias for the receiver
           attributes: ['firstName', 'lastName', 'email']
         }
       ],
@@ -221,12 +221,12 @@ app.get('/account', verifyToken, async (req, res) => {
       include: [
         {
           model: User,
-          as: 'Sender',  // Alias for the sender user
+          as: 'sender',  // Alias for the sender user
           attributes: ['firstName', 'lastName'],
         },
         {
           model: User,
-          as: 'Receiver',  // Alias for the receiver user
+          as: 'receiver',  // Alias for the receiver user
           attributes: ['firstName', 'lastName'],
         }
       ]

@@ -102,8 +102,8 @@ const Transaction = sequelize.define('Transaction', {
 });
 
 // Define associations for Transaction model
-Transaction.belongsTo(User, { as: 'Sender', foreignKey: 'senderId' });
-Transaction.belongsTo(User, { as: 'Receiver', foreignKey: 'receiverId' });
+Transaction.belongsTo(User, { as: 'sender', foreignKey: 'senderId' });
+Transaction.belongsTo(User, { as: 'receiver', foreignKey: 'receiverId' });
 
 // Define the associations between User and Account
 User.hasOne(Account, {
