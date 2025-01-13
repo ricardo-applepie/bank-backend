@@ -125,12 +125,12 @@ app.post('/create', async (req, res) => {
       include: [
         {
           model: User,
-          as: 'sender',    // Specify the alias for the sender
+          as: 'Sender',    // Specify the alias for the sender
           attributes: ['firstName', 'lastName', 'email']
         },
         {
           model: User,
-          as: 'receiver',  // Specify the alias for the receiver
+          as: 'Receiver',  // Specify the alias for the receiver
           attributes: ['firstName', 'lastName', 'email']
         }
       ],
@@ -210,33 +210,27 @@ app.get('/account', verifyToken, async (req, res) => {
       order: [['createdAt', 'DESC']], // Order by creation date, latest first
     });
 
-  const transactions = await Transaction.findAll({
-    where: {
-      [Sequelize.Op.or]: [
-        { senderId: userId },
-        { receiverId: userId }
-      ]
-    },
-    order: [['createdAt', 'DESC']], // Order by creation date, latest first
-    include: [
-      {
-        model: User,
-        as: 'Sender',  // Alias for the sender user
-        attributes: ['firstName', 'lastName'],
-        where: {
-          userId: Sequelize.col('Transaction.senderId')
-        }
+    const transactions = await Transaction.findAll({
+      where: {
+        [Sequelize.Op.or]: [
+          { senderId: userId },
+          { receiverId: userId }
+        ]
       },
-      {
-        model: User,
-        as: 'Receiver',  // Alias for the receiver user
-        attributes: ['firstName', 'lastName'],
-        where: {
-          userId: Sequelize.col('Transaction.receiverId')
+      order: [['createdAt', 'DESC']], // Order by creation date, latest first
+      include: [
+        {
+          model: User,
+          as: 'Sender',  // Alias for the sender user
+          attributes: ['firstName', 'lastName'],
+        },
+        {
+          model: User,
+          as: 'Receiver',  // Alias for the receiver user
+          attributes: ['firstName', 'lastName'],
         }
-      }
-    ]
-  });
+      ]
+    });
 
 
     const users = await User.findAll({
