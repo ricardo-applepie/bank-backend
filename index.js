@@ -115,6 +115,35 @@ app.post('/create', async (req, res) => {
 
     const plainUsers = users.map(user => user.get({ plain: true }));
 
+    const transactions = await Transaction.findAll({
+      where: {
+        [Sequelize.Op.or]: [
+          { senderId: userId },
+          { receiverId: userId }
+        ]
+      },
+      order: [['createdAt', 'DESC']], // Order by creation date, latest first
+      include: [
+        {
+          model: User,
+          as: 'Sender',  // Alias for the sender user
+          attributes: ['firstName', 'lastName'],
+          where: {
+            userId: Sequelize.col('Transaction.senderId')
+          }
+        },
+        {
+          model: User,
+          as: 'Receiver',  // Alias for the receiver user
+          attributes: ['firstName', 'lastName'],
+          where: {
+            userId: Sequelize.col('Transaction.receiverId')
+          }
+        }
+      ]
+    });
+
+
     // Restructure the response
     const response = {
       userId: senderId, // Assuming senderId corresponds to the user making the request
@@ -127,7 +156,7 @@ app.post('/create', async (req, res) => {
       updatedAt: accountData.updatedAt,
       notifications: plainNotifications, // Include notifications
       users: plainUsers, // Include users
-      transaction // Include the created transaction if needed
+      transactions // Include the created transaction if needed
     };
 
     res.status(201).json(response);
@@ -186,15 +215,34 @@ app.get('/account', verifyToken, async (req, res) => {
       order: [['createdAt', 'DESC']], // Order by creation date, latest first
     });
 
-    const transactions = await Transaction.findAll({
+  const transactions = await Transaction.findAll({
     where: {
-        [Sequelize.Op.or]: [
+      [Sequelize.Op.or]: [
         { senderId: userId },
         { receiverId: userId }
-        ]
+      ]
     },
     order: [['createdAt', 'DESC']], // Order by creation date, latest first
-    });
+    include: [
+      {
+        model: User,
+        as: 'Sender',  // Alias for the sender user
+        attributes: ['firstName', 'lastName'],
+        where: {
+          userId: Sequelize.col('Transaction.senderId')
+        }
+      },
+      {
+        model: User,
+        as: 'Receiver',  // Alias for the receiver user
+        attributes: ['firstName', 'lastName'],
+        where: {
+          userId: Sequelize.col('Transaction.receiverId')
+        }
+      }
+    ]
+  });
+
 
     const users = await User.findAll({
         where: {
