@@ -213,6 +213,12 @@ app.get('/account', verifyToken, async (req, res) => {
           attributes: ['firstName', 'lastName'],
         },
         {
+          model: Account,
+          as: 'receiverAccount',  // Alias for the receiver's account
+          attributes: ['accountId'],
+          where: { userId: Sequelize.col('Transaction.receiverId') },  // Ensure it's the receiver's account
+        },
+        {
           model: User,
           as: 'receiver',  // Alias for the receiver user
           attributes: ['firstName', 'lastName'],
